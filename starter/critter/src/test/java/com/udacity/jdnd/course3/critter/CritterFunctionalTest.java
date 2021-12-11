@@ -2,24 +2,30 @@ package com.udacity.jdnd.course3.critter;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import com.udacity.jdnd.course3.critter.pet.PetController;
-import com.udacity.jdnd.course3.critter.pet.PetDTO;
-import com.udacity.jdnd.course3.critter.pet.PetType;
-import com.udacity.jdnd.course3.critter.schedule.ScheduleController;
-import com.udacity.jdnd.course3.critter.schedule.ScheduleDTO;
-import com.udacity.jdnd.course3.critter.user.*;
+import com.udacity.jdnd.course3.critter.DTO.CustomerDTO;
+import com.udacity.jdnd.course3.critter.DTO.EmployeeDTO;
+import com.udacity.jdnd.course3.critter.DTO.EmployeeRequestDTO;
+import com.udacity.jdnd.course3.critter.controller.UserController;
+import com.udacity.jdnd.course3.critter.controller.PetController;
+import com.udacity.jdnd.course3.critter.entity.EmployeeSkill;
+import com.udacity.jdnd.course3.critter.DTO.PetDTO;
+import com.udacity.jdnd.course3.critter.entity.PetType;
+import com.udacity.jdnd.course3.critter.controller.ScheduleController;
+import com.udacity.jdnd.course3.critter.DTO.ScheduleDTO;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.nio.charset.StandardCharsets;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+
+import static java.util.Comparator.naturalOrder;
 
 /**
  * This is a set of functional tests to validate the basic capabilities desired for this application.
@@ -179,7 +185,7 @@ public class CritterFunctionalTest {
         petTemp.setOwnerId(customerDTO.getId());
         PetDTO petDTO = petController.savePet(petTemp);
 
-        LocalDate date = LocalDate.of(2019, 12, 25);
+        LocalDate date = LocalDate.of(2021, 12, 25);
         List<Long> petList = Lists.newArrayList(petDTO.getId());
         List<Long> employeeList = Lists.newArrayList(employeeDTO.getId());
         Set<EmployeeSkill> skillSet =  Sets.newHashSet(EmployeeSkill.PETTING);
@@ -193,17 +199,20 @@ public class CritterFunctionalTest {
         Assertions.assertEquals(scheduleDTO.getPetIds(), petList);
     }
 
+    /**
+     * updated dates to be in the future. Scheduling in the past is not allowed
+     */
     @Test
     public void testFindScheduleByEntities() {
-        ScheduleDTO sched1 = populateSchedule(1, 2, LocalDate.of(2019, 12, 25), Sets.newHashSet(EmployeeSkill.FEEDING, EmployeeSkill.WALKING));
-        ScheduleDTO sched2 = populateSchedule(3, 1, LocalDate.of(2019, 12, 26), Sets.newHashSet(EmployeeSkill.PETTING));
+        ScheduleDTO sched1 = populateSchedule(1, 2, LocalDate.of(2021, 12, 22), Sets.newHashSet(EmployeeSkill.FEEDING, EmployeeSkill.WALKING));
+        ScheduleDTO sched2 = populateSchedule(3, 1, LocalDate.of(2021, 12, 23), Sets.newHashSet(EmployeeSkill.PETTING));
 
         //add a third schedule that shares some employees and pets with the other schedules
         ScheduleDTO sched3 = new ScheduleDTO();
         sched3.setEmployeeIds(sched1.getEmployeeIds());
         sched3.setPetIds(sched2.getPetIds());
         sched3.setActivities(Sets.newHashSet(EmployeeSkill.SHAVING, EmployeeSkill.PETTING));
-        sched3.setDate(LocalDate.of(2020, 3, 23));
+        sched3.setDate(LocalDate.of(2022, 3, 23));
         scheduleController.createSchedule(sched3);
 
         /*
@@ -240,17 +249,28 @@ public class CritterFunctionalTest {
         compareSchedules(sched3, scheds2c.get(1));
     }
 
-
+    /**
+     * Updated to generate random name because we can't add duplicates employee with same name and skills
+     */
     private static EmployeeDTO createEmployeeDTO() {
+        byte[] array = new byte[7]; // length is bounded by 7
+        new Random().nextBytes(array);
+        String generatedString = new String(array, StandardCharsets.UTF_8);
         EmployeeDTO employeeDTO = new EmployeeDTO();
-        employeeDTO.setName("TestEmployee");
+        employeeDTO.setName(generatedString);
         employeeDTO.setSkills(Sets.newHashSet(EmployeeSkill.FEEDING, EmployeeSkill.PETTING));
         return employeeDTO;
     }
+
+    /**
+     * Updated to set a random phone number in order to have unique customers
+     */
     private static CustomerDTO createCustomerDTO() {
+        Random ran = new Random();
+        int num = ran.nextInt(9000000) + 1000000000;
         CustomerDTO customerDTO = new CustomerDTO();
         customerDTO.setName("TestEmployee");
-        customerDTO.setPhoneNumber("123-456-789");
+        customerDTO.setPhoneNumber(String.valueOf(num));
         return customerDTO;
     }
 
@@ -258,6 +278,14 @@ public class CritterFunctionalTest {
         PetDTO petDTO = new PetDTO();
         petDTO.setName("TestPet");
         petDTO.setType(PetType.CAT);
+        return petDTO;
+    }
+
+    private static PetDTO createPetDTO2() {
+        PetDTO petDTO = new PetDTO();
+        petDTO.setName("TestPet");
+        petDTO.setType(PetType.CAT);
+        petDTO.setBirthDate(LocalDate.of(2019,12,12));
         return petDTO;
     }
 
@@ -277,6 +305,9 @@ public class CritterFunctionalTest {
         return scheduleDTO;
     }
 
+    /**
+     *Updated to create unique pets by unique random birthdate
+     */
     private ScheduleDTO populateSchedule(int numEmployees, int numPets, LocalDate date, Set<EmployeeSkill> activities) {
         List<Long> employeeIds = IntStream.range(0, numEmployees)
                 .mapToObj(i -> createEmployeeDTO())
@@ -289,16 +320,34 @@ public class CritterFunctionalTest {
         List<Long> petIds = IntStream.range(0, numPets)
                 .mapToObj(i -> createPetDTO())
                 .map(p -> {
+                    Random ran = new Random();
+                    p.setBirthDate(LocalDate.of(ran.nextInt(2019)+1, ran.nextInt(11) + 1, ran.nextInt(27)+1));
                     p.setOwnerId(cust.getId());
                     return petController.savePet(p).getId();
                 }).collect(Collectors.toList());
         return scheduleController.createSchedule(createScheduleDTO(petIds, employeeIds, date, activities));
     }
 
+    /**
+     * Added sorting before comparing.
+     * Since pets and employee in Schedule entity are saved in a Set which it doesn't save the elements in a particular order.
+     */
     private static void compareSchedules(ScheduleDTO sched1, ScheduleDTO sched2) {
-        Assertions.assertEquals(sched1.getPetIds(), sched2.getPetIds());
+        List<Long> sortedSched1PetIds = sched1.getPetIds();
+        sortedSched1PetIds.sort(naturalOrder());
+
+        List<Long> sortedSched2PetIds = sched2.getPetIds();
+        sortedSched2PetIds.sort(naturalOrder());
+
+        List<Long> sortedSched1EmployIds = sched1.getEmployeeIds();
+        sortedSched1EmployIds.sort(naturalOrder());
+
+        List<Long> sortedSched2EmployIds = sched2.getEmployeeIds();
+        sortedSched2EmployIds.sort(naturalOrder());
+
+        Assertions.assertEquals(sortedSched1PetIds, sortedSched2PetIds);
         Assertions.assertEquals(sched1.getActivities(), sched2.getActivities());
-        Assertions.assertEquals(sched1.getEmployeeIds(), sched2.getEmployeeIds());
+        Assertions.assertEquals(sortedSched1EmployIds, sortedSched2EmployIds);
         Assertions.assertEquals(sched1.getDate(), sched2.getDate());
     }
 

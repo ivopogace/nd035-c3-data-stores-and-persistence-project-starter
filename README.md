@@ -32,7 +32,7 @@ Another SQL database may be used if desired, but do not use the H2 in-memory dat
 5. Within that directory, click on CritterApplication.java and select `Run` -> `Debug CritterApplication`. 
 6. Open a browser and navigate to the url: [http://localhost:8082/test](http://localhost:8082/test)
 
-You should see the message "Critter Starter installed successfully" in your browser.
+You should see the message "Critter Starter installed successfully" in your browser. 
 
 ## Testing
 
@@ -44,6 +44,10 @@ Once you have completed the above installation, you should also be able to run t
 A window should open showing you the test executions. All 9 tests should fail and if you click on them they will show `java.lang.UnsupportedOperationeException` as the cause.
 
 As you complete the objectives of this project, you will be able to verify progress by re-running these tests.
+
+## Test cases bugs to be fixed when forking this project
+* Keep in mind updating the dates to be in the future when creating schedules.
+* Customer phone numbers should be 10 Digits long [0-9]
 
 ### Tested Conditions
 Tests will pass under the following conditions:
@@ -64,7 +68,8 @@ In addition to the included unit tests, a Postman collection has been provided.
 1. Open Postman.
 2. Select the `Import` button.
 3. Import the file found in this repository under `src/main/resource/Udacity.postman_collection.json`
-4. Expand the Udacity folder in postman.
+4. Or `src/main/resource/Udacity_Ivo.postman_collection.json` which contains a better version of the colletion
+5. Expand the Udacity folder in postman.
 
 Each entry in this collection contains information in its `Body` tab if necessary and all requests should function for a completed project. Depending on your key generation strategy, you may need to edit the specific ids in these requests for your particular project.
 
