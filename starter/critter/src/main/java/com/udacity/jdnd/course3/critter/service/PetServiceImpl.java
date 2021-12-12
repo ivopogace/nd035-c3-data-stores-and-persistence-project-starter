@@ -5,9 +5,11 @@ import com.udacity.jdnd.course3.critter.entity.PetType;
 import com.udacity.jdnd.course3.critter.repository.PetRepository;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.EntityNotFoundException;
 import javax.transaction.Transactional;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @Transactional
@@ -25,7 +27,10 @@ public class PetServiceImpl implements PetService{
 
     @Override
     public Pet getPetById(Long petId) {
-        return petRepository.findById(petId).get();
+        Optional<Pet> pet = petRepository.findById(petId);
+        if (pet.isPresent())
+            return pet.get();
+        else throw new EntityNotFoundException("Pet not found id: " + petId);
     }
 
     @Override

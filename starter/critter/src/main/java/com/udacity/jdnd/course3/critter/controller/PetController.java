@@ -30,18 +30,13 @@ public class PetController {
 
     @PostMapping
     public PetDTO savePet(@RequestBody PetDTO petDTO) {
-        try {
-            if (petService.petExists(petDTO.getName(), petDTO.getType(), petDTO.getBirthDate()))
-                throw new ValidationException(String
-                        .format("Pet with name %s, type %s and birthdate %s already exists",
-                                petDTO.getName(),
-                                petDTO.getType(),
-                                petDTO.getBirthDate()));
-            return convertToPetDto(petService.addPet(convertToPetEntity(petDTO)));
-        } catch (Exception ex){
-            throw new ValidationException(ex.getMessage());
-        }
-
+        if (petService.petExists(petDTO.getName(), petDTO.getType(), petDTO.getBirthDate()))
+            throw new ValidationException(String
+                    .format("Pet with name %s, type %s and birthdate %s already exists",
+                            petDTO.getName(),
+                            petDTO.getType(),
+                            petDTO.getBirthDate()));
+        return convertToPetDto(petService.addPet(convertToPetEntity(petDTO)));
     }
 
     @GetMapping("/{petId}")

@@ -13,7 +13,7 @@ public class Schedule {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Future
+    @Future(message = "You can't schedule a meeting in the past.")
     private LocalDate date;
 
     @ElementCollection(targetClass = EmployeeSkill.class)

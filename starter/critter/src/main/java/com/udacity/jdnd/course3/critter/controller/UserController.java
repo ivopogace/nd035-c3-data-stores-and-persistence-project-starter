@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.persistence.EntityExistsException;
 import javax.persistence.EntityNotFoundException;
-import javax.validation.ValidationException;
 import java.time.DayOfWeek;
 import java.util.ArrayList;
 import java.util.List;
@@ -41,16 +40,12 @@ public class UserController {
 
     @PostMapping("/customer")
     public CustomerDTO saveCustomer(@RequestBody CustomerDTO customerDTO) {
-        try {
-            if (userService.customerExists(customerDTO.getName(), customerDTO.getPhoneNumber()))
-                throw new EntityExistsException(String
-                        .format("Customer with name %s and phone number %s already exists",
-                        customerDTO.getName(),
-                        customerDTO.getPhoneNumber()));
-            return convertToCustomerDto(userService.addCustomer(convertToCustomerEntity(customerDTO)));
-        } catch (Exception ex){
-            throw new ValidationException(ex);
-        }
+        if (userService.customerExists(customerDTO.getName(), customerDTO.getPhoneNumber()))
+            throw new EntityExistsException(String
+                    .format("Customer with name %s and phone number %s already exists",
+                            customerDTO.getName(),
+                            customerDTO.getPhoneNumber()));
+        return convertToCustomerDto(userService.addCustomer(convertToCustomerEntity(customerDTO)));
     }
 
     @GetMapping("/customer")

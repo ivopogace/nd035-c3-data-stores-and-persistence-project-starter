@@ -9,6 +9,7 @@ import com.udacity.jdnd.course3.critter.repository.EmployeeRepository;
 import com.udacity.jdnd.course3.critter.DTO.EmployeeRequestDTO;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.EntityNotFoundException;
 import javax.transaction.Transactional;
 import java.time.DayOfWeek;
 import java.util.*;
@@ -49,7 +50,10 @@ public class UserServiceImpl implements UserService{
 
     @Override
     public Employee getEmployee(Long employeeId) {
-        return employeeRepository.findById(employeeId).get();
+        Optional<Employee> employee = employeeRepository.findById(employeeId);
+        if (employee.isPresent())
+            return employee.get();
+        else throw new EntityNotFoundException("Employee not found id: " + employeeId);
     }
 
     @Override
@@ -75,7 +79,9 @@ public class UserServiceImpl implements UserService{
     @Override
     public Customer getCustomerById(Long ownerId) {
         Optional<Customer> customer = customerRepository.findById(ownerId);
-        return customer.get();
+        if (customer.isPresent())
+            return customer.get();
+        else throw new EntityNotFoundException("Customer(Owner) not found id: " + ownerId);
     }
 
     @Override
